@@ -14,7 +14,10 @@ def selecionar_arquivos():
     )
 
     for arquivo in arquivos:
-        lista.insert(tk.END, arquivo)
+        if arquivo not in arquivos_selecionados:
+            arquivos_selecionados.append(arquivo)
+            lista.insert(tk.END, arquivo)
+            
 
     print(arquivos)
 
@@ -25,6 +28,8 @@ def remover_arquivo():
         lista.delete(indice)
 
         arquivos_selecionados.pop(indice)
+
+        print(arquivos_selecionados)
 
 
 
