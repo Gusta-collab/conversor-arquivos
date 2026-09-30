@@ -8,6 +8,7 @@ root = tk.Tk()
 # variaveis
 arquivos_selecionados = []
 
+
 # função que faz selelcionar apenas arquivos pdf
 def selecionar_arquivos():
     arquivos = filedialog.askopenfilenames(
@@ -33,7 +34,7 @@ def remover_arquivo():
 
         print(arquivos_selecionados)
 
-def converter_arquivos():
+def conversao_word():
     if not arquivos_selecionados:
         print("nenhum arquivo selecionado")
         return
@@ -56,13 +57,39 @@ def converter_arquivos():
             print("erro: {e}")
 
 
+def conversao_excel():
+    print("opção selecionada: excel")
+    # código para conversão para excel
+
+def conversao_powerpoint():  
+    print("opção selecionada: powerpoint")
+    # código para conversão para powerpoint
+
+
+
+def selecao_arquivo():
+    if selecionado == "word":
+        print("opção selecionada: word")
+        modulo = conversao_word
+
+
+def executar_comando_selecionado():
+    arquivo_escolhido = selecionado.get()
+
+    funcao_para_executar = comando_arquivo.get(arquivo_escolhido)
+
+    if funcao_para_executar:
+        funcao_para_executar()
+    
 
 
 # tela para visualização
-
 root.title("conversor PDF -> word")
+root.geometry("600x600")
 
-root.geometry("600x500")
+comando_arquivo = {"word": conversao_word,"excel": conversao_excel,"powerpoint": conversao_powerpoint}
+
+
 
 lista = tk.Listbox(root, width=50, height=10)
 lista.pack(pady=20)
@@ -78,8 +105,16 @@ botao.pack(pady=20)
 botao_remover = tk.Button(root, text="remover arquivo", command = remover_arquivo)
 botao_remover.pack(pady=20)
 
-botao_converter = tk.Button(root, text="converter", command=converter_arquivos)
+botao_converter = tk.Button(root, text="converter", command=executar_comando_selecionado)
 botao_converter.pack(pady=20)
+
+#selecionar arquivo
+opcoes = list(comando_arquivo.keys())
+selecionado = tk.StringVar(root)
+selecionado.set(opcoes[0]) #valor padrão inicial
+
+menu_suspenso = tk.OptionMenu(root, selecionado, *opcoes)
+menu_suspenso.pack(pady=20)
 
 
 root.mainloop()
