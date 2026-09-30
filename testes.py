@@ -77,7 +77,7 @@ def conversao_excel():
             arquivo_pdf = caminho_completo.rsplit(".",1)[0] + ".pdf"
 
             pasta_trabalho = excel.Workbooks.Open(caminho_completo)
-            pasta_trabalho.ExportAsFixedFormat(0,arquivo_pdf)
+            pasta_trabalho.ExportAsFixedFormat(0, arquivo_pdf)
             pasta_trabalho.Close(False)
 
             print(f"sucesso! salvo:{arquivo_pdf}")
