@@ -1,6 +1,10 @@
 import tkinter as tk
 from tkinter import filedialog
 from pdf2docx import Converter
+import pandas as pd
+import pdfplumber
+import win32com.client
+import os
 
 
 root = tk.Tk()
@@ -13,7 +17,7 @@ arquivos_selecionados = []
 def selecionar_arquivos():
     arquivos = filedialog.askopenfilenames(
         title="selecione os arquivos para converter",
-        filetypes =[("Arquivos PDF", "*.pdf")],
+        filetypes =[("Arquivos PDF", "*.*")],
     )
 
     for arquivo in arquivos:
@@ -42,7 +46,7 @@ def conversao_word():
     for arquivo_pdf in arquivos_selecionados:
         arquivo_docx = arquivo_pdf.rsplit(".",1)[0] + ".docx"
 
-        print("convertendo: {arquivo_pdf} ...")
+        print(f"convertendo: {arquivo_pdf} ...")
 
         try:
             cv = Converter(arquivo_pdf)
@@ -54,13 +58,37 @@ def conversao_word():
             print(f"Sucesso! Salvo como: {arquivo_docx}")
 
         except Exception as e:
-            print("erro: {e}")
+            print(f"erro: {e}")
 
 
 def conversao_excel():
-    print("opção selecionada: excel")
-    # código para conversão para excel
+    if not arquivos_selecionados:
+        print("nenhum arquivo selecionado")
+        return
 
+    excel = win32com.client.Dispatch("Excel.Application")
+    excel.Visible = False
+
+    for arquivo_excel in arquivos_selecionados:
+        try:
+            print("convertendo")
+
+            caminho_completo = os.path.abspath(arquivo_excel)
+            arquivo_pdf = caminho_completo.rsplit(".",1)[0] + ".pdf"
+
+            pasta_trabalho = excel.Workbooks.Open(caminho_completo)
+            pasta_trabalho.ExportAsFixedFormat(0,arquivo_pdf)
+            pasta_trabalho.Close(False)
+
+            print(f"sucesso! salvo:{arquivo_pdf}")
+
+        except Exception as e:
+            print(f"erro:{e}")
+
+    excel.Quit()
+
+
+    
 def conversao_powerpoint():  
     print("opção selecionada: powerpoint")
     # código para conversão para powerpoint
