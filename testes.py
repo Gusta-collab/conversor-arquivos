@@ -19,10 +19,20 @@ COR_PRINCIPAL = "#0A84FF"
 TXT_TITULO = "#FFFFFF"
 TXT_SECUNDARIO = "#8E8E93"
 
-# deixando a janela compacta mas com espaço suficiente para todos os elementos
 root = TkinterDnD_CTk(fg_color=BG_ROOT)
 root.title("Conversor PDF")
-root.geometry("400x560") 
+
+# configurando tamanho e centralizando a janela principal na tela
+largura_janela = 400
+altura_janela = 560
+
+largura_tela = root.winfo_screenwidth()
+altura_tela = root.winfo_screenheight()
+
+pos_x = int((largura_tela / 2) - (largura_janela / 2))
+pos_y = int((altura_tela / 2) - (altura_janela / 2))
+
+root.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
 root.resizable(False, False)
 
 # variaveis
@@ -39,7 +49,14 @@ caminho_destino.set(pasta_padrao)
 def abrir_janela_ajuda():
     janela_ajuda = ctk.CTkToplevel(root)
     janela_ajuda.title("Arquivos Suportados")
-    janela_ajuda.geometry("320x340")
+    
+    # centralizando a janelinha de ajuda também
+    largura_ajuda = 320
+    altura_ajuda = 340
+    pos_x_ajuda = int((largura_tela / 2) - (largura_ajuda / 2))
+    pos_y_ajuda = int((altura_tela / 2) - (altura_ajuda / 2))
+    janela_ajuda.geometry(f"{largura_ajuda}x{altura_ajuda}+{pos_x_ajuda}+{pos_y_ajuda}")
+    
     janela_ajuda.resizable(False, False)
     janela_ajuda.configure(fg_color="#181818")
     janela_ajuda.transient(root)
