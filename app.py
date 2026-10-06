@@ -257,7 +257,7 @@ frame_topo.pack(fill="x", padx=20, pady=(15, 5))
 
 ctk.CTkLabel(
     frame_topo,
-    text="Conversor Office para PDF",
+    text="Conversor arquivos para PDF",
     font=("Arial", 16, "bold"),
     text_color=TXT_TITULO
 ).pack(side="left")
