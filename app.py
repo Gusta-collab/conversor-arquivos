@@ -3,7 +3,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 from tkinterdnd2 import TkinterDnD, DND_FILES
 import win32com.client
-from PIL import Image  # Nova biblioteca para converter as imagens
+from PIL import Image  
 
 # unindo customtkinter com tkinterdnd2 para manter o arrastar e soltar funcionando no tema moderno
 class TkinterDnD_CTk(ctk.CTk, TkinterDnD.DnDWrapper):
@@ -13,7 +13,7 @@ class TkinterDnD_CTk(ctk.CTk, TkinterDnD.DnDWrapper):
 
 ctk.set_appearance_mode("Dark")
 
-# cores base do nosso tema escuro
+# cores base do tema escuro
 BG_ROOT = "#121212"
 BG_ELEVATED = "#1e1e1e"
 COR_PRINCIPAL = "#ff0000"
@@ -106,7 +106,7 @@ def abrir_janela_ajuda():
     )
     btn_fechar.pack(pady=(0, 15))
 
-# atualizando a lista na tela e colocando as cores corretas para cada tipo de arquivo
+# cores corretas para cada tipo de arquivo
 def atualizar_lista():
     for widget in frame_lista.winfo_children():
         widget.destroy()
@@ -210,10 +210,25 @@ def converter_arquivos():
                 if word is None:
                     word = win32com.client.Dispatch("Word.Application")
                     word.Visible = False
-                    word.DisplayAlerts = 0 # Evita caixas de diálogo ao abrir TXT/HTML/XML
-                doc = word.Documents.Open(caminho_completo)
+                    word.DisplayAlerts = 0 
+                
+                caminho_abrir = caminho_completo
+                txt_temporario = None
+                
+                # Proteção para XML: força a leitura como texto simples
+                if ext == '.xml':
+                    import shutil
+                    txt_temporario = os.path.join(pasta_salvar, f"{nome_sem_ext}_temporario.txt")
+                    shutil.copy2(caminho_completo, txt_temporario)
+                    caminho_abrir = txt_temporario
+
+                doc = word.Documents.Open(caminho_abrir)
                 doc.SaveAs(arquivo_pdf, FileFormat=17) 
                 doc.Close()
+                
+                # Limpeza do arquivo de transição
+                if txt_temporario and os.path.exists(txt_temporario):
+                    os.remove(txt_temporario)
 
             # Planilhas roteadas para o Excel
             elif ext in ['.xls', '.xlsx', '.xlsb']:
