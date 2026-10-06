@@ -19,7 +19,7 @@ COR_PRINCIPAL = "#0A84FF"
 TXT_TITULO = "#FFFFFF"
 TXT_SECUNDARIO = "#8E8E93"
 
-# deixando a janela compacta mas um pouco maior pra caber a escolha de pasta
+# deixando a janela compacta mas com espaço suficiente para todos os elementos
 root = TkinterDnD_CTk(fg_color=BG_ROOT)
 root.title("Conversor PDF")
 root.geometry("400x560") 
@@ -34,6 +34,60 @@ pasta_padrao = os.path.join(os.path.expanduser("~"), "Desktop", "PDFs_Salvos")
 if not os.path.exists(pasta_padrao):
     os.makedirs(pasta_padrao)
 caminho_destino.set(pasta_padrao)
+
+# janela suspensa que mostra todos os formatos suportados
+def abrir_janela_ajuda():
+    janela_ajuda = ctk.CTkToplevel(root)
+    janela_ajuda.title("Arquivos Suportados")
+    janela_ajuda.geometry("320x340")
+    janela_ajuda.resizable(False, False)
+    janela_ajuda.configure(fg_color="#181818")
+    janela_ajuda.transient(root)
+    janela_ajuda.grab_set()
+
+    ctk.CTkLabel(
+        janela_ajuda,
+        text="Formatos Suportados",
+        font=("Arial", 15, "bold"),
+        text_color=TXT_TITULO
+    ).pack(pady=(15, 10))
+
+    # caixa com as categorias e extensões permitidas
+    card_info = ctk.CTkFrame(janela_ajuda, fg_color=BG_ELEVATED, corner_radius=8)
+    card_info.pack(fill="both", expand=True, padx=15, pady=(0, 15))
+
+    texto_formatos = (
+        "• Word (Azul):\n"
+        "   .docx, .doc\n\n"
+        "• Excel (Verde):\n"
+        "   .xlsx, .xls, .xlsb (Binário)\n\n"
+        "• PowerPoint (Laranja):\n"
+        "   .pptx, .ppt\n\n"
+        "Dica: você pode arrastar múltiplos arquivos\n"
+        "diretamente para a tela."
+    )
+
+    ctk.CTkLabel(
+        card_info,
+        text=texto_formatos,
+        font=("Arial", 12),
+        text_color=TXT_SECUNDARIO,
+        justify="left"
+    ).pack(padx=15, pady=15, anchor="w")
+
+    btn_fechar = ctk.CTkButton(
+        janela_ajuda,
+        text="Entendi",
+        width=100,
+        height=30,
+        command=janela_ajuda.destroy,
+        fg_color=COR_PRINCIPAL,
+        hover_color="#007AFF",
+        text_color="white",
+        font=("Arial", 11, "bold"),
+        corner_radius=6
+    )
+    btn_fechar.pack(pady=(0, 15))
 
 # atualizando a lista na tela e colocando as cores corretas para cada tipo de arquivo
 def atualizar_lista():
@@ -51,7 +105,7 @@ def atualizar_lista():
 
         if ext in ['.doc', '.docx']:
             cor_bg = '#2b579a' 
-        elif ext in ['.xls', '.xlsx']:
+        elif ext in ['.xls', '.xlsx', '.xlsb']:
             cor_bg = '#217346' 
         elif ext in ['.ppt', '.pptx']:
             cor_bg = '#d24726' 
@@ -83,7 +137,7 @@ def ao_soltar_arquivos(evento):
 def selecionar_arquivos():
     arquivos = filedialog.askopenfilenames(
         title="Selecione os arquivos",
-        filetypes=[("Arquivos Office", "*.docx *.doc *.xlsx *.xls *.pptx *.ppt")]
+        filetypes=[("Arquivos Office", "*.docx *.doc *.xlsx *.xls *.xlsb *.pptx *.ppt")]
     )
     for arquivo in arquivos:
         if arquivo not in arquivos_selecionados:
@@ -134,7 +188,7 @@ def converter_arquivos():
                 doc.SaveAs(arquivo_pdf, FileFormat=17) 
                 doc.Close()
 
-            elif ext in ['.xls', '.xlsx']:
+            elif ext in ['.xls', '.xlsx', '.xlsb']:
                 if excel is None:
                     excel = win32com.client.Dispatch("Excel.Application")
                     excel.Visible = False
@@ -159,10 +213,33 @@ def converter_arquivos():
     label_status.configure(text="Concluído! PDFs gerados.", text_color="#30D158")
 
 
-# montando a interface
-ctk.CTkLabel(root, text="Conversor Office para PDF", font=("Arial", 16, "bold"), text_color=TXT_TITULO).pack(pady=(15, 5))
+# cabecalho com titulo e botao circular de ajuda
+frame_topo = ctk.CTkFrame(root, fg_color="transparent")
+frame_topo.pack(fill="x", padx=20, pady=(15, 5))
 
-# a própria lista agora serve como área de arrastar e soltar
+ctk.CTkLabel(
+    frame_topo,
+    text="Conversor Office para PDF",
+    font=("Arial", 16, "bold"),
+    text_color=TXT_TITULO
+).pack(side="left")
+
+# botao redondo com ponto de interrogacao
+btn_ajuda = ctk.CTkButton(
+    frame_topo,
+    text="?",
+    width=26,
+    height=26,
+    corner_radius=13,
+    fg_color=BG_ELEVATED,
+    hover_color="#38383A",
+    text_color=TXT_TITULO,
+    font=("Arial", 13, "bold"),
+    command=abrir_janela_ajuda
+)
+btn_ajuda.pack(side="right")
+
+# a própria lista serve como área de arrastar e soltar
 frame_lista = ctk.CTkScrollableFrame(root, fg_color=BG_ELEVATED, border_width=1, border_color="#38383A", width=340, height=240)
 frame_lista.pack(pady=10, padx=20, fill="both", expand=True)
 
@@ -180,11 +257,9 @@ ctk.CTkLabel(frame_destino, text="Salvar em:", font=("Arial", 11, "bold"), text_
 frame_destino_input = ctk.CTkFrame(frame_destino, fg_color="transparent")
 frame_destino_input.pack(fill="x")
 
-# label que mostra o caminho que o usuario escolheu
 lbl_caminho = ctk.CTkLabel(frame_destino_input, textvariable=caminho_destino, font=("Arial", 10), text_color=TXT_TITULO, fg_color=BG_ELEVATED, corner_radius=6, height=28, anchor="w", padx=10)
 lbl_caminho.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
-# botao pra trocar o lugar de salvar
 btn_mudar_pasta = ctk.CTkButton(frame_destino_input, text="Mudar", width=60, height=28, command=selecionar_pasta_destino, fg_color=BG_ELEVATED, text_color=TXT_TITULO, hover_color="#38383A", font=("Arial", 11, "bold"))
 btn_mudar_pasta.pack(side="right")
 
