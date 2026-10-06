@@ -3,6 +3,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 from tkinterdnd2 import TkinterDnD, DND_FILES
 import win32com.client
+from PIL import Image  # Nova biblioteca para converter as imagens
 
 # unindo customtkinter com tkinterdnd2 para manter o arrastar e soltar funcionando no tema moderno
 class TkinterDnD_CTk(ctk.CTk, TkinterDnD.DnDWrapper):
@@ -50,9 +51,8 @@ def abrir_janela_ajuda():
     janela_ajuda = ctk.CTkToplevel(root)
     janela_ajuda.title("Arquivos Suportados")
     
-    # centralizando a janelinha de ajuda também
-    largura_ajuda = 320
-    altura_ajuda = 340
+    largura_ajuda = 340
+    altura_ajuda = 380
     pos_x_ajuda = int((largura_tela / 2) - (largura_ajuda / 2))
     pos_y_ajuda = int((altura_tela / 2) - (altura_ajuda / 2))
     janela_ajuda.geometry(f"{largura_ajuda}x{altura_ajuda}+{pos_x_ajuda}+{pos_y_ajuda}")
@@ -69,19 +69,19 @@ def abrir_janela_ajuda():
         text_color=TXT_TITULO
     ).pack(pady=(15, 10))
 
-    # caixa com as categorias e extensões permitidas
+    # caixa com as categorias e extensões permitidas atualizadas
     card_info = ctk.CTkFrame(janela_ajuda, fg_color=BG_ELEVATED, corner_radius=8)
     card_info.pack(fill="both", expand=True, padx=15, pady=(0, 15))
 
     texto_formatos = (
-        "• Word (Azul):\n"
-        "   .docx, .doc\n\n"
+        "• Textos e Web (Azul):\n"
+        "   .docx, .doc, .txt, .html, .htm, .xml\n\n"
         "• Excel (Verde):\n"
-        "   .xlsx, .xls, .xlsb (Binário)\n\n"
-        "• PowerPoint (Laranja):\n"
-        "   .pptx, .ppt\n\n"
-        "Dica: você pode arrastar múltiplos arquivos\n"
-        "diretamente para a tela."
+        "   .xlsx, .xls, .xlsb\n\n"
+        "• Apresentações (Laranja):\n"
+        "   .pptx, .ppt, .pps, .ppsx, .odp\n\n"
+        "• Imagens (Roxo):\n"
+        "   .png, .jpg, .jpeg, .bmp, .webp, .tiff"
     )
 
     ctk.CTkLabel(
@@ -120,12 +120,14 @@ def atualizar_lista():
         nome_arquivo = os.path.basename(arquivo)
         ext = os.path.splitext(nome_arquivo)[1].lower()
 
-        if ext in ['.doc', '.docx']:
-            cor_bg = '#2b579a' 
+        if ext in ['.doc', '.docx', '.txt', '.html', '.htm', '.xml']:
+            cor_bg = '#2b579a' # Azul Word / Textos
         elif ext in ['.xls', '.xlsx', '.xlsb']:
-            cor_bg = '#217346' 
-        elif ext in ['.ppt', '.pptx']:
-            cor_bg = '#d24726' 
+            cor_bg = '#217346' # Verde Excel
+        elif ext in ['.ppt', '.pptx', '.pps', '.ppsx', '.odp']:
+            cor_bg = '#d24726' # Laranja PowerPoint
+        elif ext in ['.png', '.jpg', '.jpeg', '.bmp', '.webp', '.tiff']:
+            cor_bg = '#8e44ad' # Roxo para Imagens
         else:
             cor_bg = BG_ELEVATED
 
@@ -154,7 +156,13 @@ def ao_soltar_arquivos(evento):
 def selecionar_arquivos():
     arquivos = filedialog.askopenfilenames(
         title="Selecione os arquivos",
-        filetypes=[("Arquivos Office", "*.docx *.doc *.xlsx *.xls *.xlsb *.pptx *.ppt")]
+        filetypes=[
+            ("Todos os Suportados", "*.docx *.doc *.txt *.html *.htm *.xml *.xlsx *.xls *.xlsb *.pptx *.ppt *.pps *.ppsx *.odp *.png *.jpg *.jpeg *.bmp *.webp *.tiff"),
+            ("Documentos e Textos", "*.docx *.doc *.txt *.html *.htm *.xml"),
+            ("Planilhas", "*.xlsx *.xls *.xlsb"),
+            ("Apresentações", "*.pptx *.ppt *.pps *.ppsx *.odp"),
+            ("Imagens", "*.png *.jpg *.jpeg *.bmp *.webp *.tiff")
+        ]
     )
     for arquivo in arquivos:
         if arquivo not in arquivos_selecionados:
@@ -197,32 +205,45 @@ def converter_arquivos():
         arquivo_pdf = os.path.join(pasta_salvar, f"{nome_sem_ext}.pdf")
 
         try:
-            if ext in ['.doc', '.docx']:
+            # Documentos de texto, web e xml roteados para o Word
+            if ext in ['.doc', '.docx', '.txt', '.html', '.htm', '.xml']:
                 if word is None:
                     word = win32com.client.Dispatch("Word.Application")
                     word.Visible = False
+                    word.DisplayAlerts = 0 # Evita caixas de diálogo ao abrir TXT/HTML/XML
                 doc = word.Documents.Open(caminho_completo)
                 doc.SaveAs(arquivo_pdf, FileFormat=17) 
                 doc.Close()
 
+            # Planilhas roteadas para o Excel
             elif ext in ['.xls', '.xlsx', '.xlsb']:
                 if excel is None:
                     excel = win32com.client.Dispatch("Excel.Application")
                     excel.Visible = False
+                    excel.DisplayAlerts = False
                 wb = excel.Workbooks.Open(caminho_completo)
                 wb.ExportAsFixedFormat(0, arquivo_pdf)
                 wb.Close(False)
 
-            elif ext in ['.ppt', '.pptx']:
+            # Slides roteados para o PowerPoint
+            elif ext in ['.ppt', '.pptx', '.pps', '.ppsx', '.odp']:
                 if ppt is None:
                     ppt = win32com.client.Dispatch("PowerPoint.Application")
                 presentation = ppt.Presentations.Open(caminho_completo, WithWindow=False)
                 presentation.SaveAs(arquivo_pdf, 32)
                 presentation.Close()
+                
+            # Imagens tratadas pela biblioteca Pillow
+            elif ext in ['.png', '.jpg', '.jpeg', '.bmp', '.webp', '.tiff']:
+                imagem = Image.open(caminho_completo)
+                # Converte para RGB (necessário para salvar como PDF pois formatos como PNG podem ter fundo transparente/RGBA)
+                imagem_convertida = imagem.convert('RGB')
+                imagem_convertida.save(arquivo_pdf)
 
         except Exception as e:
             print(f"Erro no arquivo {nome_arquivo}: {e}")
 
+    # Encerra os processos
     if word: word.Quit()
     if excel: excel.Quit()
     if ppt: ppt.Quit()
