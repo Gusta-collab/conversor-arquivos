@@ -16,7 +16,7 @@ ctk.set_appearance_mode("Dark")
 # cores base do nosso tema escuro
 BG_ROOT = "#121212"
 BG_ELEVATED = "#1e1e1e"
-COR_PRINCIPAL = "#0A84FF"
+COR_PRINCIPAL = "#ff0000"
 TXT_TITULO = "#FFFFFF"
 TXT_SECUNDARIO = "#8E8E93"
 
@@ -25,7 +25,7 @@ root.title("Conversor PDF")
 
 # configurando tamanho e centralizando a janela principal na tela
 largura_janela = 400
-altura_janela = 560
+altura_janela = 500
 
 largura_tela = root.winfo_screenwidth()
 altura_tela = root.winfo_screenheight()
@@ -99,7 +99,7 @@ def abrir_janela_ajuda():
         height=30,
         command=janela_ajuda.destroy,
         fg_color=COR_PRINCIPAL,
-        hover_color="#007AFF",
+        hover_color="#BB0000",
         text_color="white",
         font=("Arial", 11, "bold"),
         corner_radius=6
@@ -308,7 +308,7 @@ frame_botoes.pack(pady=15)
 btn_add = ctk.CTkButton(frame_botoes, text="+ Adicionar", width=130, height=35, command=selecionar_arquivos, fg_color=BG_ELEVATED, text_color=TXT_TITULO, hover_color="#38383A", font=("Arial", 12, "bold"))
 btn_add.grid(row=0, column=0, padx=10)
 
-btn_converter = ctk.CTkButton(frame_botoes, text="GERAR PDF", width=130, height=35, command=converter_arquivos, fg_color=COR_PRINCIPAL, hover_color="#007AFF", text_color="white", font=("Arial", 12, "bold"))
+btn_converter = ctk.CTkButton(frame_botoes, text="GERAR PDF", width=130, height=35, command=converter_arquivos, fg_color=COR_PRINCIPAL, hover_color="#BB0000", text_color="white", font=("Arial", 12, "bold"))
 btn_converter.grid(row=0, column=1, padx=10)
 
 label_status = ctk.CTkLabel(root, text="", font=("Arial", 12, "bold"))
